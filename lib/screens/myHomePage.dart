@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:car_race_quiz_plan_b/widget/answer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,9 +12,11 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _questionIndex = 0;
   bool answerWasSelected = false;
-  double carx = -1;
+  double car1x = -1;
+  double car2x = -1;
   Text text = Text('');
   bool youWon = false;
+  bool youLose = false;
 
   void questionAnswered(bool answerScore) {
     setState(() {
@@ -25,19 +25,35 @@ class _MyHomePageState extends State<MyHomePage> {
 
       //check if answer was correct
       if (answerScore) {
-        if(carx<1){
-        carx = carx + .4;
+        if(car2x<1){
+        car2x = car2x + .4;
         }
         else{
           youWon =true;
-          text = Text('Congratulations',
+          text = Text('Congratulations !!!',
           style:TextStyle(
             color: Colors.white,
-            fontSize: 40,
+            fontSize: 25,
             fontWeight: FontWeight.bold
             ),
           );
         }
+      }else{
+
+        if(car1x<1){
+        car1x = car1x + .4;
+        }
+        else{
+          youLose =true;
+          text = Text('SORRY !!!',
+          style:TextStyle(
+            color: Colors.white,
+            fontSize: 25,
+            fontWeight: FontWeight.bold
+            ),
+          );
+        }
+
       }
       _questionIndex++;
       answerWasSelected = false;
@@ -54,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Expanded(
             flex: 2,
             child: Container(
-              alignment: Alignment.center,
+              //alignment: Alignment.center,
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height / 2,
               child: Stack(
@@ -65,10 +81,18 @@ class _MyHomePageState extends State<MyHomePage> {
                       fit: BoxFit.fill,
                       image: AssetImage('assets/images/city.jpg')),
                   Container(
-                    alignment: Alignment(carx, 0),
-                    // width: MediaQuery.of(context).size.width*.2,
-                    // height:MediaQuery.of(context).size.height*.2 ,
-                    child: Image(image: AssetImage('assets/images/car1.png')),
+                    alignment: Alignment(car1x, 0),
+                    //width: MediaQuery.of(context).size.width*.5,
+                    //height:MediaQuery.of(context).size.height*.5 ,
+                    child: Image(
+                      height:MediaQuery.of(context).size.height*.9 ,
+                      image: AssetImage('assets/images/car2.png')),
+                  ),
+                   Container(
+                    alignment: Alignment(car2x,0),
+                     //width: MediaQuery.of(context).size.width*.5,
+                     //height:MediaQuery.of(context).size.height*.5 ,
+                  child: Image(image: AssetImage('assets/images/car1.png')),
                   )
                 ],
               ),
@@ -88,7 +112,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(15),
                       color: Colors.teal.shade900),
-                  child: youWon == false? Text(
+                  child: youWon == false && youLose == false? Text(
                     '${_questions[_questionIndex]['question']}',
                     style: TextStyle(color: Colors.white),
                   ):text
@@ -100,7 +124,7 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Container(
                 alignment: Alignment.center,
                 decoration: BoxDecoration(color: Colors.pink.shade900),
-                child:youWon == false? Row(
+                child:youWon == false && youLose == false? Row(
                   children: [
                     ...(_questions[_questionIndex]['answers']
                             as List<Map<String, Object>>)
@@ -116,7 +140,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               },
                             )),
                   ],
-                ):
+                ):youWon == true?
                 Center(
                   child: Text('You Won The Race',
                   style:TextStyle(
@@ -125,8 +149,18 @@ class _MyHomePageState extends State<MyHomePage> {
             fontWeight: FontWeight.bold
             ),
                   ),
+                ):
+                youLose == true?
+Center(
+                  child: Text('You Lose The Race',
+                  style:TextStyle(
+            color: Colors.white,
+            fontSize: 40,
+            fontWeight: FontWeight.bold
+            ),
+                  ),
+                ):null
                 )
-                ),
           )
         ],
       ),
