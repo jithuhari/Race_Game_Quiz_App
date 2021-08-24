@@ -1,5 +1,6 @@
 import 'package:car_race_quiz_plan_b/widget/answer.dart';
 import 'package:car_race_quiz_plan_b/widget/gameScreen.dart';
+import 'package:car_race_quiz_plan_b/widget/questionCard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:confetti/confetti.dart';
@@ -13,7 +14,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   ConfettiController? _confettiController;
   AssetsAudioPlayer winAudio = AssetsAudioPlayer();
   AssetsAudioPlayer failAudio = AssetsAudioPlayer();
@@ -28,8 +28,6 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
-  
-
   @override
   void initState() {
     _confettiController =
@@ -37,18 +35,21 @@ class _MyHomePageState extends State<MyHomePage> {
 
     super.initState();
 
-    winAudio.open(Audio('assets/audio/clap.wav'),
-        autoStart: false, 
-        //showNotification: true
-        );
-    failAudio.open(Audio('assets/audio/fail.mp3'),
-        autoStart: false, 
-        //showNotification: true
-        );
-     raceAudio.open(Audio('assets/audio/race.wav'),
-        autoStart: false, 
-        //showNotification: true
-        );    
+    winAudio.open(
+      Audio('assets/audio/clap.wav'),
+      autoStart: false,
+      //showNotification: true
+    );
+    failAudio.open(
+      Audio('assets/audio/fail.mp3'),
+      autoStart: false,
+      //showNotification: true
+    );
+    raceAudio.open(
+      Audio('assets/audio/race.wav'),
+      autoStart: false,
+      //showNotification: true
+    );
   }
 
   int _questionIndex = 0;
@@ -105,30 +106,17 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       body: Column(
         children: [
-          GameScreen(car1x: car1x, car2x: car2x, confettiController: _confettiController),
+          GameScreen(
+              car1x: car1x,
+              car2x: car2x,
+              confettiController: _confettiController),
+          QuestionCard(
+              youWon: youWon,
+              youLose: youLose,
+              questionIndex: _questionIndex,
+              text: text),
 
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.grey,
-                border: Border.all(color: Colors.grey, width: 5),
-              ),
-              child: Container(
-                  padding: EdgeInsets.all(8),
-                  alignment: Alignment.center,
-                  width: MediaQuery.of(context).size.width,
-                  //height: MediaQuery.of(context).size.height*.2,
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      color: Colors.teal.shade900),
-                  child: youWon == false && youLose == false
-                      ? Text(
-                          '${_questions[_questionIndex]['question']}',
-                          style: TextStyle(color: Colors.white),
-                        )
-                      : text),
-            ),
-          ),
+          //Answer Card
           Expanded(
               child: Container(
                   alignment: Alignment.center,
@@ -178,7 +166,6 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-
 
 final _questions = const [
   {
