@@ -19,12 +19,6 @@ class Answer extends StatelessWidget {
                     child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                             primary: answerColor,
-                            // padding: EdgeInsets.fromLTRB(
-                            //   0,
-                            //   MediaQuery.of(context).size.height * .1,
-                            //   0,
-                            //   MediaQuery.of(context).size.height * .1,
-                            // )
                             ),
                         onPressed:answerTap,
                         child: Text(answerText)),

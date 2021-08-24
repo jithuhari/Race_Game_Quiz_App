@@ -1,6 +1,9 @@
 import 'package:car_race_quiz_plan_b/widget/answer.dart';
+import 'package:car_race_quiz_plan_b/widget/gameScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:confetti/confetti.dart';
+import 'package:assets_audio_player/assets_audio_player.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key}) : super(key: key);
@@ -10,6 +13,44 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+
+  ConfettiController? _confettiController;
+  AssetsAudioPlayer winAudio = AssetsAudioPlayer();
+  AssetsAudioPlayer failAudio = AssetsAudioPlayer();
+  AssetsAudioPlayer raceAudio = AssetsAudioPlayer();
+
+  @override
+  void dispose() {
+    _confettiController!.dispose();
+    winAudio.dispose();
+    failAudio.dispose();
+    raceAudio.dispose();
+    super.dispose();
+  }
+
+  
+
+  @override
+  void initState() {
+    _confettiController =
+        ConfettiController(duration: Duration(milliseconds: 500));
+
+    super.initState();
+
+    winAudio.open(Audio('assets/audio/clap.wav'),
+        autoStart: false, 
+        //showNotification: true
+        );
+    failAudio.open(Audio('assets/audio/fail.mp3'),
+        autoStart: false, 
+        //showNotification: true
+        );
+     raceAudio.open(Audio('assets/audio/race.wav'),
+        autoStart: false, 
+        //showNotification: true
+        );    
+  }
+
   int _questionIndex = 0;
   bool answerWasSelected = false;
   double car1x = -1;
@@ -25,35 +66,32 @@ class _MyHomePageState extends State<MyHomePage> {
 
       //check if answer was correct
       if (answerScore) {
-        if(car2x<1){
-        car2x = car2x + .4;
-        }
-        else{
-          youWon =true;
-          text = Text('Congratulations !!!',
-          style:TextStyle(
-            color: Colors.white,
-            fontSize: 25,
-            fontWeight: FontWeight.bold
-            ),
+        if (car2x < 1) {
+          raceAudio.play();
+          car2x = car2x + .4;
+        } else {
+          youWon = true;
+          winAudio.play();
+          _confettiController!.play();
+          text = Text(
+            'Congratulations !!!',
+            style: TextStyle(
+                color: Colors.white, fontSize: 25, fontWeight: FontWeight.bold),
           );
         }
-      }else{
-
-        if(car1x<1){
-        car1x = car1x + .4;
-        }
-        else{
-          youLose =true;
-          text = Text('SORRY !!!',
-          style:TextStyle(
-            color: Colors.white,
-            fontSize: 25,
-            fontWeight: FontWeight.bold
-            ),
+      } else {
+        if (car1x < 1) {
+          raceAudio.play();
+          car1x = car1x + .4;
+        } else {
+          youLose = true;
+          failAudio.play();
+          text = Text(
+            'SORRY !!!',
+            style: TextStyle(
+                color: Colors.white, fontSize: 25, fontWeight: FontWeight.bold),
           );
         }
-
       }
       _questionIndex++;
       answerWasSelected = false;
@@ -67,37 +105,8 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       body: Column(
         children: [
-          Expanded(
-            flex: 2,
-            child: Container(
-              //alignment: Alignment.center,
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height / 2,
-              child: Stack(
-                children: [
-                  Image(
-                      width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.height,
-                      fit: BoxFit.fill,
-                      image: AssetImage('assets/images/city.jpg')),
-                  Container(
-                    alignment: Alignment(car1x, 0),
-                    //width: MediaQuery.of(context).size.width*.5,
-                    //height:MediaQuery.of(context).size.height*.5 ,
-                    child: Image(
-                      height:MediaQuery.of(context).size.height*.9 ,
-                      image: AssetImage('assets/images/car2.png')),
-                  ),
-                   Container(
-                    alignment: Alignment(car2x,0),
-                     //width: MediaQuery.of(context).size.width*.5,
-                     //height:MediaQuery.of(context).size.height*.5 ,
-                  child: Image(image: AssetImage('assets/images/car1.png')),
-                  )
-                ],
-              ),
-            ),
-          ),
+          GameScreen(car1x: car1x, car2x: car2x, confettiController: _confettiController),
+
           Expanded(
             child: Container(
               decoration: BoxDecoration(
@@ -112,61 +121,64 @@ class _MyHomePageState extends State<MyHomePage> {
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(15),
                       color: Colors.teal.shade900),
-                  child: youWon == false && youLose == false? Text(
-                    '${_questions[_questionIndex]['question']}',
-                    style: TextStyle(color: Colors.white),
-                  ):text
-                  
-                  ),
+                  child: youWon == false && youLose == false
+                      ? Text(
+                          '${_questions[_questionIndex]['question']}',
+                          style: TextStyle(color: Colors.white),
+                        )
+                      : text),
             ),
           ),
           Expanded(
-            child: Container(
-                alignment: Alignment.center,
-                decoration: BoxDecoration(color: Colors.pink.shade900),
-                child:youWon == false && youLose == false? Row(
-                  children: [
-                    ...(_questions[_questionIndex]['answers']
-                            as List<Map<String, Object>>)
-                        .map((answer) => Answer(
-                              answerText: '${answer['answerText']}',
-                              answerColor: answerWasSelected
-                                  ? answer['score'] == true
-                                      ? Colors.green
-                                      : Colors.red
-                                  : Colors.pink,
-                              answerTap: () {
-                                questionAnswered(answer['score'] == true);
-                              },
-                            )),
-                  ],
-                ):youWon == true?
-                Center(
-                  child: Text('You Won The Race',
-                  style:TextStyle(
-            color: Colors.white,
-            fontSize: 40,
-            fontWeight: FontWeight.bold
-            ),
-                  ),
-                ):
-                youLose == true?
-Center(
-                  child: Text('You Lose The Race',
-                  style:TextStyle(
-            color: Colors.white,
-            fontSize: 40,
-            fontWeight: FontWeight.bold
-            ),
-                  ),
-                ):null
-                )
-          )
+              child: Container(
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(color: Colors.pink.shade900),
+                  child: youWon == false && youLose == false
+                      ? Row(
+                          children: [
+                            ...(_questions[_questionIndex]['answers']
+                                    as List<Map<String, Object>>)
+                                .map((answer) => Answer(
+                                      answerText: '${answer['answerText']}',
+                                      answerColor: answerWasSelected
+                                          ? answer['score'] == true
+                                              ? Colors.green
+                                              : Colors.red
+                                          : Colors.pink,
+                                      answerTap: () {
+                                        questionAnswered(
+                                            answer['score'] == true);
+                                      },
+                                    )),
+                          ],
+                        )
+                      : youWon == true
+                          ? Center(
+                              child: Text(
+                                'You Won The Race 😀',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 40,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            )
+                          : youLose == true
+                              ? Center(
+                                  child: Text(
+                                    'You Lose The Race 😞',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 40,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                )
+                              : null))
         ],
       ),
     );
   }
 }
+
 
 final _questions = const [
   {
